@@ -1,5 +1,5 @@
 name: node-firefox-headless
-version: 0.2.1
+version: 0.2.2
 inherits: hijonathan/node-firefox@0.1.0
 type: main
 platform: ubuntu@12.04
@@ -26,4 +26,4 @@ script: |
   echo '  ;;' >> tmp.sh
   echo '  esac' >> tmp.sh
   sudo chmod +x tmp.sh
-  sudo mv tmp.sh /etc/init.d/xfvb
+  sudo mv tmp.sh /etc/init.d/xvfb
