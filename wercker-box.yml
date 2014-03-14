@@ -1,0 +1,13 @@
+name: node-firefox-headless
+version: 0.1.0
+inherits: hijonathan/node-firefox@0.1.0
+type: main
+platform: ubuntu@12.04
+description: wercker box for running headles test on node
+keywords:
+  - firefox
+  - opensource
+  - headless
+script: |
+  sudo apt-get update -y
+  sudo apt-get install xvfb x11-xkb-utils xfonts-100dpi xfonts-75dpi xfonts-scalable xfonts-cyrillic x11-apps -y
