@@ -11,3 +11,18 @@ keywords:
 script: |
   sudo apt-get update -y
   sudo apt-get install xvfb x11-xkb-utils xfonts-100dpi xfonts-75dpi xfonts-scalable xfonts-cyrillic x11-apps -y
+  sudo touch /etc/init.d/xvfb
+  sudo echo '#!/bin/bash' >> /etc/init.d/xvfb
+  sudo echo '  if [ -z "$1" ]; then' >> /etc/init.d/xvfb
+  sudo echo '    echo "`basename $0` {start|stop}"' >> /etc/init.d/xvfb
+  sudo echo '    exit' >> /etc/init.d/xvfb
+  sudo echo '  fi' >> /etc/init.d/xvfb
+  sudo echo '   case "$1" in' >> /etc/init.d/xvfb
+  sudo echo '  start)' >> /etc/init.d/xvfb
+  sudo echo '    /usr/bin/Xvfb :99 -ac -screen 0 1024x768x8 &' >> /etc/init.d/xvfb
+  sudo echo '  ;;' >> /etc/init.d/xvfb
+  sudo echo '  stop)' >> /etc/init.d/xvfb
+  sudo echo '    killall Xvfb' >> /etc/init.d/xvfb
+  sudo echo '  ;;' >> /etc/init.d/xvfb
+  sudo echo '  esac' >> /etc/init.d/xvfb
+  sudo chmod +x /etc/init.d/xvfb
