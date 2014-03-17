@@ -1,5 +1,5 @@
 name: node-firefox-headless
-version: 0.2.3
+version: 0.2.4
 inherits: hijonathan/node-firefox@0.1.0
 type: main
 platform: ubuntu@12.04
@@ -71,7 +71,7 @@ script: |
   echo '  #   2 if daemon could not be started' >> tmp.sh
   echo '  $DAEMON $DAEMON_ARGS --running && return 1' >> tmp.sh
   echo ' ' >> tmp.sh
-  echo '  # --user in daemon doesn't prepare environment variables like HOME, USER, LOGNAME or USERNAME,' >> tmp.sh
+  echo '  # --user in daemon does not prepare environment variables like HOME, USER, LOGNAME or USERNAME,' >> tmp.sh
   echo '  # so we let su do so for us now' >> tmp.sh
   echo '  $DAEMON $DAEMON_ARGS -- $PROG_PATH $PROG_OPTIONS || return 2' >> tmp.sh
   echo '}' >> tmp.sh
@@ -105,7 +105,7 @@ script: |
   echo '        ;;' >> tmp.sh
   echo '  esac' >> tmp.sh
   echo ' ' >> tmp.sh
-  echo '  # Many daemons don't delete their pidfiles when they exit.' >> tmp.sh
+  echo '  # Many daemons do not delete their pidfiles when they exit.' >> tmp.sh
   echo '  rm -f $PIDFILE' >> tmp.sh
   echo '  return 0' >> tmp.sh
   echo '}' >> tmp.sh
