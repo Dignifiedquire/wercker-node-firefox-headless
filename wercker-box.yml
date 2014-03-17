@@ -1,5 +1,5 @@
 name: node-firefox-headless
-version: 0.2.2
+version: 0.2.3
 inherits: hijonathan/node-firefox@0.1.0
 type: main
 platform: ubuntu@12.04
@@ -11,19 +11,149 @@ keywords:
 script: |
   sudo apt-get update -y
   sudo apt-get install xvfb x11-xkb-utils xfonts-100dpi xfonts-75dpi xfonts-scalable xfonts-cyrillic x11-apps -y
+  sudo apt-get install daemon -y
   touch tmp.sh
   echo '#!/bin/bash' >> tmp.sh
-  echo '  if [ -z "$1" ]; then' >> tmp.sh
-  echo '    echo "`basename $0` {start|stop}"' >> tmp.sh
-  echo '    exit' >> tmp.sh
-  echo '  fi' >> tmp.sh
-  echo '   case "$1" in' >> tmp.sh
-  echo '  start)' >> tmp.sh
-  echo '    /usr/bin/Xvfb :99 -ac -screen 0 1024x768x8 &' >> tmp.sh
-  echo '  ;;' >> tmp.sh
-  echo '  stop)' >> tmp.sh
-  echo '    killall Xvfb' >> tmp.sh
-  echo '  ;;' >> tmp.sh
+  echo '# /etc/init.d/xvfb_daemon' >> tmp.sh
+  echo '# Xvfb startup script.' >> tmp.sh
+  echo '# Tom Meier <tom@venombytes.com>' >> tmp.sh
+  echo '#' >> tmp.sh
+  echo '### BEGIN INIT INFO' >> tmp.sh
+  echo '# Provides:          xvfb' >> tmp.sh
+  echo '# Short-Description: Start/stop/restart daemon' >> tmp.sh
+  echo '# Description:       Controls the Xvfb daemon which starts/stops the X Virtual Framebuffer server' >> tmp.sh
+  echo '### END INIT INFO' >> tmp.sh
+  echo 'DESC="Xvfb Virtual Framebuffer Server"' >> tmp.sh
+  echo 'NAME=xvfb_daemon' >> tmp.sh
+  echo 'SCRIPTNAME=/etc/init.d/$NAME' >> tmp.sh
+  echo 'CURRENT_USER=`whoami`' >> tmp.sh
+  echo 'PROG="Xvfb"' >> tmp.sh
+  echo 'PROG_PATH=/usr/bin/$PROG' >> tmp.sh
+  echo 'DISPLAY_NUMBER=99' >> tmp.sh
+  echo 'PROG_OPTIONS=":$DISPLAY_NUMBER -screen 0 800x600x16 -ac -pn -noreset"' >> tmp.sh
+  echo 'PROG_OUTPUT="/tmp/Xvfb.out"' >> tmp.sh
+  echo 'PIDFILE=/tmp/xvfb.pid' >> tmp.sh
+  echo 'DAEMON=/usr/bin/daemon' >> tmp.sh
+  echo 'DAEMON_ARGS="--name=$NAME --inherit --env=RAILS_ENV=$RAILS_ENV --output=$PROG_OUTPUT --pidfile=$PIDFILE"' >> tmp.sh
+  echo '[ "${NETWORKING}" = "no" ] && exit 0' >> tmp.sh
+  echo '# Verify that all xvfb processes have been shutdown' >> tmp.sh
+  echo '# and if not, then do killall for them' >> tmp.sh
+  echo 'get_running()' >> tmp.sh
+  echo '{' >> tmp.sh
+  echo '    return `ps --no-headers -f | egrep -e $1 | grep -c . `' >> tmp.sh
+  echo '}' >> tmp.sh
+  echo 'force_stop()' >> tmp.sh
+  echo '{' >> tmp.sh
+  echo '    stop_program=$1' >> tmp.sh
+  echo '    if [ -x /usr/bin/killall ]; then' >> tmp.sh
+  echo '        get_running $1' >> tmp.sh
+  echo '        if [ $? -ne 0 ]; then' >> tmp.sh
+  echo '            echo "Stopping $stop_program"' >> tmp.sh
+  echo '            killall -u $CURRENT_USER $stop_program || return 3' >> tmp.sh
+  echo '        fi' >> tmp.sh
+  echo '    else' >> tmp.sh
+  echo '        echo "Error: Could not find /bin/killall. Cannot stop $stop_program."' >> tmp.sh
+  echo '    fi' >> tmp.sh
+  echo '}' >> tmp.sh
+  echo '# Get the status of the daemon process' >> tmp.sh
+  echo 'get_daemon_status()' >> tmp.sh
+  echo '{' >> tmp.sh
+  echo '    $DAEMON $DAEMON_ARGS --running || return 1' >> tmp.sh
+  echo '}' >> tmp.sh
+  echo '#' >> tmp.sh
+  echo '# Function that starts the daemon/service' >> tmp.sh
+  echo '#' >> tmp.sh
+  echo 'do_start()' >> tmp.sh
+  echo '{' >> tmp.sh
+  echo '  # Return' >> tmp.sh
+  echo '  #   0 if daemon has been started' >> tmp.sh
+  echo '  #   1 if daemon was already running' >> tmp.sh
+  echo '  #   2 if daemon could not be started' >> tmp.sh
+  echo '  $DAEMON $DAEMON_ARGS --running && return 1' >> tmp.sh
+  echo ' ' >> tmp.sh
+  echo '  # --user in daemon doesn't prepare environment variables like HOME, USER, LOGNAME or USERNAME,' >> tmp.sh
+  echo '  # so we let su do so for us now' >> tmp.sh
+  echo '  $DAEMON $DAEMON_ARGS -- $PROG_PATH $PROG_OPTIONS || return 2' >> tmp.sh
+  echo '}' >> tmp.sh
+  echo ' ' >> tmp.sh
+  echo ' ' >> tmp.sh
+  echo '#' >> tmp.sh
+  echo '# Function that stops the daemon/service' >> tmp.sh
+  echo '#' >> tmp.sh
+  echo 'do_stop()' >> tmp.sh
+  echo '{' >> tmp.sh
+  echo '  # Return' >> tmp.sh
+  echo '  #   0 if daemon has been stopped' >> tmp.sh
+  echo '  #   1 if daemon was already stopped' >> tmp.sh
+  echo '  #   2 if daemon could not be stopped' >> tmp.sh
+  echo '  #   other if a failure occurred' >> tmp.sh
+  echo '  get_daemon_status' >> tmp.sh
+  echo '  case "$?" in' >> tmp.sh
+  echo '      0)' >> tmp.sh
+  echo '        $DAEMON $DAEMON_ARGS --stop || return 2' >> tmp.sh
+  echo '        # wait for the process to really terminate' >> tmp.sh
+  echo '        for n in 1 2 3 4 5; do' >> tmp.sh
+  echo '            sleep 1' >> tmp.sh
+  echo '            $DAEMON $DAEMON_ARGS --running || break' >> tmp.sh
+  echo '        done' >> tmp.sh
+  echo '        if get_daemon_status; then' >> tmp.sh
+  echo '            force_stop $PROG || return 3' >> tmp.sh
+  echo '        fi' >> tmp.sh
+  echo '        ;;' >> tmp.sh
+  echo '      *)' >> tmp.sh
+  echo '        force_stop $PROG || return 3' >> tmp.sh
+  echo '        ;;' >> tmp.sh
   echo '  esac' >> tmp.sh
+  echo ' ' >> tmp.sh
+  echo '  # Many daemons don't delete their pidfiles when they exit.' >> tmp.sh
+  echo '  rm -f $PIDFILE' >> tmp.sh
+  echo '  return 0' >> tmp.sh
+  echo '}' >> tmp.sh
+  echo ' ' >> tmp.sh
+  echo ' ' >> tmp.sh
+  echo ' ' >> tmp.sh
+  echo ' ' >> tmp.sh
+  echo 'case "$1" in' >> tmp.sh
+  echo '    start)' >> tmp.sh
+  echo '      echo -n "Starting : X Virtual Frame Buffer on display $DISPLAY_NUMBER"' >> tmp.sh
+  echo '      do_start' >> tmp.sh
+  echo '      ;;' >> tmp.sh
+  echo '    stop)' >> tmp.sh
+  echo '      echo -n "Shutting down : X Virtual Frame Buffer"' >> tmp.sh
+  echo '      do_stop' >> tmp.sh
+  echo '      ;;' >> tmp.sh
+  echo '    restart|reload)' >> tmp.sh
+  echo '      $0 stop' >> tmp.sh
+  echo '      $0 start' >> tmp.sh
+  echo '      ;;' >> tmp.sh
+  echo '    status)' >> tmp.sh
+  echo '      get_daemon_status' >> tmp.sh
+  echo '      case "$?" in' >> tmp.sh
+  echo '         0) echo "$PROG is running with the pid `cat $PIDFILE`";;' >> tmp.sh
+  echo '         *)' >> tmp.sh
+  echo '              get_running $PROG' >> tmp.sh
+  echo '              procs=$?' >> tmp.sh
+  echo '              if [ $procs -eq 0 ]; then' >> tmp.sh
+  echo '                  echo -n "$PROG is not running"' >> tmp.sh
+  echo '                  if [ -f $PIDFILE ]; then' >> tmp.sh
+  echo '                      echo ", but the pidfile ($PIDFILE) still exists"' >> tmp.sh
+  echo '                  else' >> tmp.sh
+  echo '                      echo' >> tmp.sh
+  echo '                  fi' >> tmp.sh
+  echo ' ' >> tmp.sh
+  echo '              else' >> tmp.sh
+  echo '                  echo "$procs instances of $PROG are running at the moment"' >> tmp.sh
+  echo '                  echo "but the pidfile $PIDFILE is missing"' >> tmp.sh
+  echo '              fi' >> tmp.sh
+  echo '              ;;' >> tmp.sh
+  echo '      esac' >> tmp.sh
+  echo '      ;;' >> tmp.sh
+  echo '    *)' >> tmp.sh
+  echo '     echo $"Usage: $0 (start|stop|restart|reload|status)"' >> tmp.sh
+  echo '     exit 1' >> tmp.sh
+  echo '     ;;' >> tmp.sh
+  echo 'esac' >> tmp.sh
+  echo 'echo' >> tmp.sh
+  echo 'exit $RETVAL' >> tmp.sh
   sudo chmod +x tmp.sh
   sudo mv tmp.sh /etc/init.d/xvfb
