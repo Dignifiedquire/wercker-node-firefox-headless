@@ -1,15 +1,47 @@
 name: node-firefox-headless
-version: 0.2.4
-inherits: hijonathan/node-firefox@0.1.0
+version: 0.3.0
+inherits: wercker/nodejs@1.4.0
 type: main
 platform: ubuntu@12.04
 description: wercker box for running headles test on node
 keywords:
+  - nodejs
+  - node
   - firefox
   - opensource
   - headless
+box-detect:
+  priority: 1000
+  version:
+  detect:
+    - files:
+      - package.json
+
+default-build:
+  nodejs:
+    priority: 50
+    detect:
+      - default: true
+    text-to-append: |
+      # Build definition
+      build:
+        # The steps that will be executed on build
+        steps:
+          # A step that executes `npm install` command
+          - npm-install
+          # A step that executes `npm test` command
+          - npm-test
+
+          # A custom script step, name value is used in the UI
+          # and the code value contains the command that get executed
+          - script:
+              name: echo nodejs information
+              code: |
+                echo "node version $(node -v) running"
+                echo "npm version $(npm -v) running"
 script: |
   sudo apt-get update -y
+  sudo apt-get install firefox
   sudo apt-get install xvfb x11-xkb-utils xfonts-100dpi xfonts-75dpi xfonts-scalable xfonts-cyrillic x11-apps -y
   sudo apt-get install daemon -y
   touch tmp.sh
