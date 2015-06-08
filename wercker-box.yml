@@ -1,6 +1,6 @@
 name: node-firefox-headless
-version: 0.3.0
-inherits: wercker/nodejs@1.4.0
+version: 0.4.0
+inherits: wercker/nodejs@1
 type: main
 platform: ubuntu@12.04
 description: wercker box for running headles test on node
@@ -40,6 +40,7 @@ default-build:
                 echo "node version $(node -v) running"
                 echo "npm version $(npm -v) running"
 script: |
+  sudo npm update -g npm
   sudo apt-get update -y
   sudo apt-get install firefox
   sudo apt-get install xvfb x11-xkb-utils xfonts-100dpi xfonts-75dpi xfonts-scalable xfonts-cyrillic x11-apps -y
